@@ -16,6 +16,9 @@ import PNDLMVueRedux from 'pndlm-vue-redux'
 import reduxStore from './reduxStore'
 import Clock from './clock.vue'
 
+// if you want extra debugging:
+PNDLMVueRedux.setExtraDebug()
+
 Vue.use(PNDLMVueRedux)
 new Vue({
 	reduxStore,

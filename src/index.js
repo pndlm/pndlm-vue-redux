@@ -4,19 +4,20 @@
  * 
  *      © 2020 PNDLM https://pndlm.com
  *      License MIT
- * 
- *      This library is currently in development.
- *      For more information please reach out 
  */
 
+let _debug = false
+const setExtraDebug = (value = true) => {
+	_debug = value
+}
+
 // inspired by vuex/src/store.js
+// eslint-disable-next-line
 let Vue // bind on install
 export function install (_Vue) {
 	if (Vue && _Vue === Vue) {
 		if (process.env.NODE_ENV !== 'production') {
-			console.error(
-				'[PNDLMVueRedux] is already installed. Vue.use(PNDLMVueRedux) should be called only once.'
-			)
+			console.error('[PNDLMVueRedux] is already installed. Vue.use(PNDLMVueRedux) should be called only once.')
 		}
 		return
 	}
@@ -26,11 +27,8 @@ export function install (_Vue) {
 
 // inspired by vuex/src/mixin.js
 function applyMixin (Vue) {
-	// lifecycle:
-	// ownProps -> mapStateToProps -> render -> componentDidUpdate/setState -> render
-
 	Vue.mixin({
-		created: vueReduxInit,
+		beforeCreate: vueReduxInit,
 		beforeDestroy: vueReduxDestroy,
 	})
 
@@ -45,30 +43,58 @@ function applyMixin (Vue) {
 			return
 		}
 
-		this._reduxUnsubscribe = this.$reduxStore.subscribe(handleStateChange.bind(this))
+		if(this.$options.mapState) {
+			//_debug && console.log('[PNDLMVueRedux] init component', this)
+
+			// sanity check that all mapState properties are functions
+			if (process.env.NODE_ENV !== 'production') {
+				const errors = 0
+				const mapState = this.$options.mapState
+				for(const k in mapState) {
+					if(typeof mapState[k] !== 'function') {
+						console.error(`[PNDLMVueRedux] mapState[${k}] is not a function, will not bind component`, this)
+						errors++
+					}
+				}
+				if(errors) {
+					// errors, do not bind
+					return
+				}
+			}
+
+			this._reduxMapStateCurrent = {}
+			this._reduxUnsubscribe = this.$reduxStore.subscribe(handleStateChange.bind(this))
+			handleStateChange.call(this)
+		}
 	}
 
 	function vueReduxDestroy () {
 		if(this._reduxUnsubscribe) {
+			_debug && console.log('[PNDLMVueRedux] destroy component', this)
 			this._reduxUnsubscribe()
 		}
 	}
 }
 
 function handleStateChange () {
-	if(this.$options.mapState) {
-		const mapState = this.$options.mapState
-		const state = this.$reduxStore.getState()
+	let willUpdate = false
 
-		for(const k in mapState) {
-			this[k] = mapState[k].call(this, state)
-		}
+	const mapState = this.$options.mapState
+	const state = this.$reduxStore.getState()
 
-		console.debug('[PNDLMVueRedux] will update component', this)
+	for(const k in mapState) {
+		const value = mapState[k].call(this, state)
+		willUpdate = willUpdate || (value !== this._reduxMapStateCurrent[k])
+		this._reduxMapStateCurrent[k] = this[k] = value
+	}
+
+	if(willUpdate) {
+		_debug && console.log('[PNDLMVueRedux] will update component', this)
 		this.$forceUpdate()
 	}
 }
 
 export default {
 	install,
+	setExtraDebug,
 }
