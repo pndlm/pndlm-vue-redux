@@ -3,7 +3,9 @@
 Vue2 bindings for Redux.  
 Opinionated toward code simplicity, predictability, and performance.
 
-**Currently WIP**
+**Currently WIP.**  We are road-testing this on a large scale product and will continue to make improvements over the coming weeks.
+
+If you have any feedback, please open an issue or pull request on GitHub.
 
 ---
 
@@ -28,7 +30,7 @@ new Vue({
 ```
 
 `clock.vue`  
-This example component uses `mapState` to pull from the state tree and keep itself updated, including use of a memoized selector.
+This example component uses `mapState` to pull from the state tree and keep itself updated, including use of a memoized selector.  It also dispatches an action upon button click.
 ```html
 <script>
 import { createSelector } from 'reselect'
@@ -42,12 +44,22 @@ const getTimeString = createSelector(
 export default {
 	mapState: {
 		timeString: getTimeString
+	},
+	methods: {
+		handleClick: function(e) {
+			this.$reduxStore.dispatch({
+				type: 'BUTTON_CLICKED'
+			})
+		}
 	}
 }
 </script>
 
 <template>
-	<div>{{ timeString }}</div>
+	<div>
+		<p>The time is: {{ timeString }}</p>
+		<button v-on:click="handleClick">Click me</button>
+	</div>
 </template>
 ```
 
