@@ -1,9 +1,15 @@
 #  ☵☲ pndlm-vue-redux
 
-Vue2 bindings for Redux.  
-Opinionated toward code simplicity, predictability, and performance.
+Vue2 bindings for Redux.
 
-**Currently WIP.**  We are road-testing this on a large scale product and will continue to make improvements over the coming weeks.
+What we are working toward is an implementation of Redux bindings for Vue which are roughly equivalent to what the `useSelector` hook offers up in the latest versions of [react-redux](https://github.com/reactjs/react-redux).
+
+**Currently WIP** — We are road-testing this on a large scale product and will continue to make improvements over the coming weeks.  Next features on the list are:
+
+* Documentation examples including props and computed properties
+* Ability to specify alternative equality function on a selector
+* Cover the bases outlined in https://react-redux.js.org/next/api/hooks
+* Update and testing with Vue 3
 
 If you have any feedback, please open an issue or pull request on GitHub.
 
@@ -65,9 +71,13 @@ export default {
 
 ---
 
+## TODO
+
+
+
 ## Source Material
 
-The library is being written through careful review of the following excellent resources.
+The library is being crafted from ongoing review of the following excellent resources:
 
 * [The History and Implementation of React-Redux](https://blog.isquaredsoftware.com/2018/11/react-redux-history-implementation/) by Mark Erikson
 * [Vue Mastery Advanced Components](https://www.vuemastery.com/courses/advanced-components) video series by Gregg Pollack and Evan You

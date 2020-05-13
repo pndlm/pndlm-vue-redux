@@ -1,7 +1,7 @@
 {
   "name": "pndlm-vue-redux",
   "version": "0.1.1",
-  "description": "☵☲ Vue2 bindings for Redux ☵☲ simplicity, performance",
+  "description": "☵☲ Vue2 bindings for Redux based on react-redux's useSelector hook",
   "keywords": [
     "redux",
     "vue",
