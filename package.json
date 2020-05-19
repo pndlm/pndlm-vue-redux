@@ -1,7 +1,7 @@
 {
   "name": "pndlm-vue-redux",
-  "version": "0.1.1",
-  "description": "☵☲ Vue2 bindings for Redux based on react-redux's useSelector hook",
+  "version": "0.1.2",
+  "description": "☵☲ Vue2 bindings for Redux ☵☲ based on react-redux's useSelector hook",
   "keywords": [
     "redux",
     "vue",
@@ -45,5 +45,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.9.2"
+  },
+  "peerDependencies": {
+    "vue": "^2.6.0",
+    "redux": "^2.0.0 || ^3.0.0 || ^4.0.0-0"
   }
 }

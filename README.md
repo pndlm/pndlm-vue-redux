@@ -6,7 +6,8 @@ What we are working toward is an implementation of Redux bindings for Vue which 
 
 **Currently WIP** — We are road-testing this on a large scale product and will continue to make improvements over the coming weeks.  Next features on the list are:
 
-* Documentation examples including props and computed properties
+* Performance improvements
+* Better examples including use of props
 * Ability to specify alternative equality function on a selector
 * Cover the bases outlined in https://react-redux.js.org/next/api/hooks
 * Update and testing with Vue 3
@@ -36,20 +37,25 @@ new Vue({
 ```
 
 `clock.vue`  
-This example component uses `mapState` to pull from the state tree and keep itself updated, including use of a memoized selector.  It also dispatches an action upon button click.
+This example component uses `mapState` to pull from the state tree and keep itself updated, including use of a memoized selector and a computed property.  It also dispatches an action upon button click.
 ```html
 <script>
 import { createSelector } from 'reselect'
 
-const getClientTick = state => state.timer.movement.clientTick
-const getTimeString = createSelector(
-	getClientTick,
+const getLocalTimeString = createSelector(
+	state => state.movement.clientTick,
 	(clientTick) => new Date(clientTick).toString()
 )
 
 export default {
 	mapState: {
-		timeString: getTimeString
+		localTimeString: getLocalTimeString,
+		clientTick: state => state.movement.clientTick,
+	},
+	computed: {
+		utcTimeString () {
+			return new Date(this.clientTick).toUTCString()
+		}
 	},
 	methods: {
 		handleClick: function(e) {
@@ -63,17 +69,14 @@ export default {
 
 <template>
 	<div>
-		<p>The time is: {{ timeString }}</p>
+		<p>The local time is: {{ localTimeString }}</p>
+		<p>The UTC time is: {{ utcTimeString }}</p>
 		<button v-on:click="handleClick">Click me</button>
 	</div>
 </template>
 ```
 
 ---
-
-## TODO
-
-
 
 ## Source Material
 

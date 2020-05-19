@@ -2,9 +2,11 @@
  *  ☵☲ pndlm-vue-redux
  *      index.js
  * 
- *      © 2020 PNDLM https://pndlm.com
+ *      MMXX PNDLM https://pndlm.com
  *      License MIT
  */
+
+import { proxy, isPlainObject } from './util'
 
 let _debug = false
 const setExtraDebug = (value = true) => {
@@ -28,11 +30,11 @@ export function install (_Vue) {
 // inspired by vuex/src/mixin.js
 function applyMixin (Vue) {
 	Vue.mixin({
-		beforeCreate: vueReduxInit,
-		beforeDestroy: vueReduxDestroy,
+		beforeCreate: pndlmVueReduxInit,
+		beforeDestroy: pndlmVueReduxDestroy,
 	})
 
-	function vueReduxInit () {
+	function pndlmVueReduxInit () {
 		const options = this.$options
 		if (options.reduxStore) {
 			this.$reduxStore = options.reduxStore
@@ -44,48 +46,47 @@ function applyMixin (Vue) {
 		}
 
 		if(this.$options.mapState) {
-			//_debug && console.log('[PNDLMVueRedux] init component', this)
-
-			// sanity check that all mapState properties are functions
-			if (process.env.NODE_ENV !== 'production') {
-				const errors = 0
-				const mapState = this.$options.mapState
-				for(const k in mapState) {
-					if(typeof mapState[k] !== 'function') {
-						console.error(`[PNDLMVueRedux] mapState[${k}] is not a function, will not bind component`, this)
-						errors++
-					}
-				}
-				if(errors) {
-					// errors, do not bind
-					return
-				}
+			_debug && console.log('[PNDLMVueRedux] init component', this)
+			
+			if (!isPlainObject(this.$options.mapState)) {
+				console.error(`[PNDLMVueRedux] mapState must be a plain object, will not map`, this)
+				return
 			}
 
-			this._reduxMapStateCurrent = {}
-			this._reduxUnsubscribe = this.$reduxStore.subscribe(handleStateChange.bind(this))
-			handleStateChange.call(this)
+			const initialData = {}
+			const state = this.$reduxStore.getState()
+			const mapState = this.$options.mapState
+
+			for(const k in mapState) {
+				if(typeof mapState[k] !== 'function') {
+					console.error(`[PNDLMVueRedux] mapState[${k}] is not a function, will not map`, this)
+					continue
+				}
+				initialData[k] = mapState[k].call(this, state)
+				proxy(this, '_pvr_observable', k)
+			}
+
+			this._pvr_observable = Vue.observable(initialData)
+			this._pvr_store_unsubscribe = this.$reduxStore.subscribe(handleStateChange.bind(this))
 		}
 	}
 
-	function vueReduxDestroy () {
-		if(this._reduxUnsubscribe) {
+	function pndlmVueReduxDestroy () {
+		if(this._pvr_store_unsubscribe) {
 			_debug && console.log('[PNDLMVueRedux] destroy component', this)
-			this._reduxUnsubscribe()
+			this._pvr_store_unsubscribe()
 		}
 	}
 }
 
 function handleStateChange () {
 	let willUpdate = false
-
-	const mapState = this.$options.mapState
 	const state = this.$reduxStore.getState()
 
-	for(const k in mapState) {
-		const value = mapState[k].call(this, state)
-		willUpdate = willUpdate || (value !== this._reduxMapStateCurrent[k])
-		this._reduxMapStateCurrent[k] = this[k] = value
+	for(const k in this._pvr_observable) {
+		const value = this.$options.mapState[k].call(this, state)
+		willUpdate = willUpdate || (value !== this._pvr_observable[k])
+		this._pvr_observable[k] = value
 	}
 
 	if(willUpdate) {
